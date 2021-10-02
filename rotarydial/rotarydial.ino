@@ -42,7 +42,7 @@ void loop()
   if ((millis() - prevStateChangeTime) > rotationDelay && needToPrint)
   {
     //The dial has finished spinning and needs to output its number
-    Serial.println(count % 10, DEC);
+    Serial.print(count % 10, DEC);
     needToPrint = false;
     count = 0;
   }
@@ -53,11 +53,11 @@ void loop()
     //The switch has been thrown
     if (trueSwitchState)
     {
-      Serial.println("o");
+      Serial.print("o");
     }
     else
     {
-      Serial.println("-");
+      Serial.print("-");
     }
     digitalWrite(LED_BUILTIN, !trueSwitchState);
     needToSendSwitch = false;
