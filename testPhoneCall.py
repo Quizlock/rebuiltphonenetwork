@@ -10,8 +10,6 @@ client = Client(account_sid, auth_token)
 call_to_num = '+17656375965'
 call_from_num = '+12817667765'
 
-message = '<Response></Response>'
-
-call = client.calls.create(twiml=message, to=call_to_num, from_=call_from_num)
+call = client.calls.create(twiml='<Response><Say>Ahoy, World!</Say></Response>', to=call_to_num, from_=call_from_num)
 
 print(call.sid)
