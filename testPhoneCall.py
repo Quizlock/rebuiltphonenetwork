@@ -10,6 +10,8 @@ client = Client(account_sid, auth_token)
 call_to_num = '+17656375965'
 call_from_num = '+12817667765'
 
-call = client.calls.create(url='http://demo.twilio.com/docs/voice.xml', to=call_to_num, from_=call_from_num)
+message = '<Response></Response>'
+
+call = client.calls.create(twiml=message, to=call_to_num, from_=call_from_num)
 
 print(call.sid)
