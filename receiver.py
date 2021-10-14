@@ -10,7 +10,7 @@ class Receiver:
 
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.bind((self.ip, self.port))
+            self.sock.bind(('', self.port))
         except:
             print('Could not bind to port ' + str(self.port))
 
@@ -20,8 +20,8 @@ class Receiver:
         rate = 20000
 
         self.p_aud = pyaudio.PyAudio()
-        self.playing_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, output=True, frames_per_buffer=chunksize)
-        self.recording_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, input=True, frames_per_buffer=chunksize)
+        self.playing_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, output=True, frames_per_buffer=chunk_size)
+        self.recording_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, input=True, frames_per_buffer=chunk_size)
 
         self.accept_connections()
 
@@ -30,16 +30,19 @@ class Receiver:
 
         print('Running on ' + str(self.ip) + ":" + str(self.port))
 
-        c, addr = self.sock.accept()
-        threading.Thread(target=self.receive_data,args=(c,)).start()
-        self.send_data(c)
+        while True:
+            print('Waiting for connections...')
+            c, addr = self.sock.accept()
+            print('Accepted connection: ' + str(c) + ", " + str(addr))
+            receiving_thread = threading.Thread(target=self.receive_data,args=(c,)).start()
+            sending_thread = threading.Thread(target=self.send_data,args=(c,)).start()
 
 
     def receive_data(self, sock):
         while True:
             try:
                 data = sock.recv(1024)
-                self.playing_stream.write(data)
+                self.playing_stream.write(data, exception_on_underflow=False)
             except:
                 pass
 
@@ -47,7 +50,7 @@ class Receiver:
     def send_data(self, sock):
         while True:
             try: 
-                data = self.recording_stream.read(1024)
+                data = self.recording_stream.read(1024, False)
                 sock.sendall(data)
             except:
                 pass
