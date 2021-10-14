@@ -10,12 +10,8 @@ class Receiver:
 
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-<<<<<<< HEAD
             self.sock.bind(('', self.port))
-=======
-            self.sock.bind((self.ip, self.port))
             open_socket = True
->>>>>>> 8d79b37238c5040ade26983393da72e5a36e8e56
         except:
             print('Could not bind to port ' + str(self.port))
             open_socket = False
@@ -26,16 +22,9 @@ class Receiver:
             channels = 1
             rate = 20000
 
-<<<<<<< HEAD
-        self.p_aud = pyaudio.PyAudio()
-        self.playing_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, output=True, frames_per_buffer=chunk_size)
-        self.recording_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, input=True, frames_per_buffer=chunk_size)
-=======
             self.p_aud = pyaudio.PyAudio()
             self.playing_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, output=True, frames_per_buffer=chunk_size)
             self.recording_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, input=True, frames_per_buffer=chunk_size)
->>>>>>> 8d79b37238c5040ade26983393da72e5a36e8e56
-
             self.accept_connections()
 
     def accept_connections(self):
@@ -43,18 +32,12 @@ class Receiver:
 
         print('Running on ' + str(self.ip) + ":" + str(self.port))
 
-<<<<<<< HEAD
         while True:
             print('Waiting for connections...')
             c, addr = self.sock.accept()
             print('Accepted connection: ' + str(c) + ", " + str(addr))
             receiving_thread = threading.Thread(target=self.receive_data,args=(c,)).start()
             sending_thread = threading.Thread(target=self.send_data,args=(c,)).start()
-=======
-        c, addr = self.sock.accept()
-        threading.Thread(target=self.receive_data,args=(c,)).start()
-        threading.Thread(target=self.send_data,args=(c,)).start()
->>>>>>> 8d79b37238c5040ade26983393da72e5a36e8e56
 
 
     def receive_data(self, sock):
