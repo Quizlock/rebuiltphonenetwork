@@ -17,7 +17,7 @@ class Receiver:
             open_socket = False
 
         if (open_socket):
-            chunk_size = 1024
+            chunk_size = 512 
             audio_format = pyaudio.paInt16
             channels = 1
             rate = 20000
@@ -32,19 +32,18 @@ class Receiver:
 
         print('Running on ' + str(self.ip) + ":" + str(self.port))
 
-        while True:
-            print('Waiting for connections...')
-            c, addr = self.sock.accept()
-            print('Accepted connection: ' + str(c) + ", " + str(addr))
-            receiving_thread = threading.Thread(target=self.receive_data,args=(c,)).start()
-            sending_thread = threading.Thread(target=self.send_data,args=(c,)).start()
+        print('Waiting for connections...')
+        c, addr = self.sock.accept()
+        print('Accepted connection: ' + str(c) + ", " + str(addr))
+        sending_thread = threading.Thread(target=self.send_data,args=(c,)).start()
+        receiving_thread = threading.Thread(target=self.receive_data,args=(c,)).start()
 
 
     def receive_data(self, sock):
         while True:
             try:
-                data = sock.recv(1024)
-                self.playing_stream.write(data, exception_on_underflow=False)
+                data = sock.recv(512)
+                self.playing_stream.write(data)
             except:
                 pass
 
@@ -52,7 +51,7 @@ class Receiver:
     def send_data(self, sock):
         while True:
             try: 
-                data = self.recording_stream.read(1024, False)
+                data = self.recording_stream.read(512)
                 sock.sendall(data)
             except:
                 pass
