@@ -35,8 +35,11 @@ class Receiver:
         print('Waiting for connections...')
         c, addr = self.sock.accept()
         print('Accepted connection: ' + str(c) + ", " + str(addr))
-        sending_thread = threading.Thread(target=self.send_data,args=(c,)).start()
-        receiving_thread = threading.Thread(target=self.receive_data,args=(c,)).start()
+        self.sending_thread = threading.Thread(target=self.send_data,args=(c,))
+        self.receiving_thread = threading.Thread(target=self.receive_data,args=(c,))
+
+        self.sending_thread.start()
+        self.receiving_thread.start()
 
 
     def receive_data(self, sock):

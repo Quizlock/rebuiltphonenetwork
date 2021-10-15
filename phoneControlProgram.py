@@ -17,7 +17,7 @@ while True:
     elif serial_input == "o":
         #End Call
         print('Ending Phone Call - Ready to Receive')
-        receiver_device = receiver.Receiver(10666)
+        #receiver_device = receiver.Receiver(10666)
     elif serial_input == "0":
         #Call Operator
         print('Calling Operator')

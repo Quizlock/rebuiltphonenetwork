@@ -33,8 +33,11 @@ class Caller:
             print('Connected to other phone')
 
             #start threads
-            sending_thread = threading.Thread(target=self.send_data).start()
-            receiving_thread = threading.Thread(target=self.receive_data).start()
+            self.sending_thread = threading.Thread(target=self.send_data)
+            self.receiving_thread = threading.Thread(target=self.receive_data)
+
+            self.sending_thread.start()
+            self.receiving_thread.start()
 
     def receive_data(self):
         while True:
