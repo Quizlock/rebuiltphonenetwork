@@ -19,7 +19,7 @@ class Caller:
             opened_socket = False
 
         if opened_socket:
-            chunk_size = 1024
+            chunk_size = 512
             audio_format = pyaudio.paInt16
             channels = 1
             rate = 20000
@@ -33,14 +33,14 @@ class Caller:
             print('Connected to other phone')
 
             #start threads
-            recieve_thread = threading.Thread(target=self.receive_data).start()
-            send_thread = threading.Thread(target=self.send_data).start()
+            sending_thread = threading.Thread(target=self.send_data).start()
+            receiving_thread = threading.Thread(target=self.receive_data).start()
 
     def receive_data(self):
         while True:
             try:
-                data = self.sock.recv(1024)
-                self.playing_stream.write(data, exception_on_underflow=False)
+                data = self.sock.recv(512)
+                self.playing_stream.write(data)
             except:
                 pass
 
@@ -48,7 +48,7 @@ class Caller:
     def send_data(self):
         while True:
             try:
-                data = self.recording_stream.read(1024, False)
+                data = self.recording_stream.read(512)
                 self.sock.sendall(data)
             except:
                 pass
