@@ -14,13 +14,13 @@ class udpCaller:
 
         self.ip_address = ip_address
         self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.DGRAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFFER_SIZE)
 
         try:
             print('Attempting to connect to ' + str(self.ip_address) + ":" + str(self.port))
             message = b'Hello'
-            sock.sendto(message, (ip_address, port))
+            self.sock.sendto(message, (ip_address, port))
             opened_socket = True
 
         except socket.error as msg:
@@ -57,5 +57,5 @@ class udpCaller:
     def send_data(self):
         while True:
             data = self.recording_stream.read(self.CHUNK_SIZE)
-            self.sock.sendto(data, self.ip_address)
+            self.sock.sendto(data, (self.ip_address, self.port))
             time.sleep(0.001)
