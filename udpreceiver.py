@@ -40,28 +40,28 @@ class udpReceiver:
         print('Receiving connection from ', client_address, message)
 
         #self.sending_thread = threading.Thread(target=self.send_data,args=(c,))
-        self.receiving_thread = threading.Thread(target=self.receive_data,args=(c,))
+        self.receiving_thread = threading.Thread(target=self.receive_data,args=())
 
         #self.sending_thread.start()
         self.receiving_thread.start()
 
 
-    def receive_data(self, sock):
+    def receive_data(self):
         def get_audio_data():
             while True:
-                frame, client_address = sock.recvfrom(self.BUFF_SIZE)
-                self.input_buffer.put(frame)
-                print('Queue size...',input_buffer.qsize())
+                frame, client_address = self.sock.recvfrom(self.BUFFER_SIZE)
+                self.input_queue.put(frame)
+                print('Queue size...',self.input_queue.qsize())
 
-        listener_thread = threading.Thread(target=getAudioData, args=())
+        listener_thread = threading.Thread(target=get_audio_data, args=())
         listener_thread.start()
 
         while True:
             try:
-                frame = q.get()
+                frame = self.input_queue.get()
                 self.playing_stream.write(frame)
-            except:
-                pass
+            except Exception as msg:
+                print(msg)
 
 
     def send_data(self, sock):
