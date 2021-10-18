@@ -30,7 +30,7 @@ class udpReceiver:
             self.p_aud = pyaudio.PyAudio()
             self.playing_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=self.CHUNK_SIZE)
             #Just test receiving a stream first
-            #self.recording_stream = self.p_aud.open(format=audio_format, channels=channels, rate=rate, input=True, frames_per_buffer=chunk_size)
+            self.recording_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=self.CHUNK_SIZE)
             self.accept_connections()
 
     def accept_connections(self):
@@ -39,10 +39,10 @@ class udpReceiver:
         message, client_address = self.sock.recvfrom(self.BUFFER_SIZE)
         print('Receiving connection from ', client_address, message)
 
-        #self.sending_thread = threading.Thread(target=self.send_data,args=(c,))
+        self.sending_thread = threading.Thread(target=self.send_data,args=(client_address,))
         self.receiving_thread = threading.Thread(target=self.receive_data,args=())
 
-        #self.sending_thread.start()
+        self.sending_thread.start()
         self.receiving_thread.start()
 
 
@@ -64,10 +64,9 @@ class udpReceiver:
                 print(msg)
 
 
-    def send_data(self, sock):
+    def send_data(self, address):
         while True:
-            try: 
-                data = self.recording_stream.read(1024)
-                sock.sendall(data)
-            except:
-                pass
+            data = self.recording_stream.read(self.CHUNK_SIZE)
+            self.sock.sendto(data, address)
+            time.sleep(0.001)
+
