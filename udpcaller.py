@@ -7,7 +7,7 @@ import queue
 
 class udpCaller:
     def __init__(self, ip_address, port):
-        self.CHUNK_SIZE = 10*1024
+        self.CHUNK_SIZE = 20*1024
         self.BUFFER_SIZE = 65536
         AUDIO_FORMAT = pyaudio.paInt16
         CHANNELS = 1
@@ -70,4 +70,4 @@ class udpCaller:
         while True:
             data = self.recording_stream.read(self.CHUNK_SIZE)
             self.sock.sendto(data, (self.ip_address, self.port))
-            time.sleep(0.001)
+            time.sleep(0.005)
