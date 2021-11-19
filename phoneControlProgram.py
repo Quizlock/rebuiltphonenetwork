@@ -3,6 +3,7 @@ import socket
 import threading
 import pyaudio
 import caller
+import receiver
 
 ser = serial.Serial('/dev/ttyUSB0', 9600) 
 
@@ -15,7 +16,8 @@ while True:
         print('Begining Phone Call')
     elif serial_input == "o":
         #End Call
-        print('Ending Phone Call')
+        print('Ending Phone Call - Ready to Receive')
+        #receiver_device = receiver.Receiver(10666)
     elif serial_input == "0":
         #Call Operator
         print('Calling Operator')
@@ -26,4 +28,4 @@ while True:
         #Call Room
         room_number = int(serial_input)
         print('Calling Room Number ' + str(room_number))
-        caller_device = caller.Caller("10.0.0.1", 6666)
+        caller_device = caller.Caller("10.0.0.66", 10666)

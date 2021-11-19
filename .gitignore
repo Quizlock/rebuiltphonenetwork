@@ -1,5 +1,4 @@
 /bin
 /lib
 /include
-/venv/
-/Scripts
+/__pycache__
