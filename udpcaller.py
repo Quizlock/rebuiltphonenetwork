@@ -5,7 +5,7 @@ import time
 import sys
 import queue
 
-class udpCaller:
+class UDPCaller:
     def __init__(self, ip_address, port):
         self.CHUNK_SIZE = 20*1024
         self.BUFFER_SIZE = 65536

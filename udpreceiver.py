@@ -4,7 +4,7 @@ import pyaudio
 import queue
 import time
 
-class udpReceiver:
+class UDPReceiver:
 
     def __init__(self, port):
         self.ip = socket.gethostbyname(socket.gethostname())
