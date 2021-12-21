@@ -8,12 +8,23 @@ from pad4pi import rpi_gpio
 CHUNK = 1024
 
 print("Loading WAVE FILES")
-dialtone = wave.open("0.wav", 'rb')
+dialtone = wave.open("../sounds/dialtone.wav", "rb")
 print("Dial Tone: ", dialtone.getnframes())
-busytone = wave.open("busytone.wav", 'rb')
+busytone = wave.open("../sounds/busytone.wav", "rb")
 print("Busy Tone: ", busytone.getnframes())
-tone0 = wave.open("dialtone.wav", 'rb')
-print("0 Tone: ", tone0.getnframes())
+ringtone = wave.open("../sounds/ringtone.wav", "rb")
+print("Ring Tone: ", ringtone.getnframes())
+
+startone = wave.open("../sounds/star.wav", "rb")
+print("Star Tone: ", startone.getnframes())
+poundtone = wave.open("../sounds/pound.wav", "rb")
+print("Pound Tone: ", poundtone.getnframes())
+
+tones = []
+for i in range(10):
+    filename = "../sounds/" + str(i) + ".wav"
+    tones.append(wave.open(filename, "rb"))
+    print(f"{i} Tone : {tones[i].getnframes()}")
 
 switch = Button(24)
 ##########################
@@ -31,7 +42,12 @@ def key_pressed(key):
     print("Pressed ", key)
     if play_tone.pressed == False:
         play_tone.pressed = True
-        play_tone.tone = key
+        if key == "*":
+            play_tone.wavefile = startone
+        elif key == "#":
+            play_tone.wavefile = poundtone
+        else:
+            play_tone.wavefile = tones[int(key)]
 
 keypad.registerKeyPressHandler(key_pressed)
 print("Done.")
@@ -39,13 +55,12 @@ print("Done.")
 class OnOff:
     def __init__(self):
         self.pressed = False
-        self.tone = -1
+        self.wavefile = None
 
 play_tone = OnOff()
 def pressed_trigger():
     if play_tone.pressed == False:
         play_tone.pressed = True
-        play_tone.tone = "B"
 
 switch.when_pressed = pressed_trigger
 
@@ -54,10 +69,7 @@ pa = pyaudio.PyAudio()
 
 def callback(in_data, frame_count, time_info, status):
     if play_tone.pressed:
-        if play_tone.tone == "B":
-            data = busytone.readframes(frame_count)
-        else:
-            data = tone0.readframes(frame_count)
+        data = play_tone.wavefile.readframes(frame_count)
     else:
         data = dialtone.readframes(frame_count)
     return (data, pyaudio.paContinue)
@@ -69,18 +81,26 @@ stream.start_stream()
 
 while True:
     if stream.is_active():
-        time.sleep(0.1) 
+        time.sleep(0.01) 
     else:
         print("Stream ended")
         play_tone.pressed = False
         stream.stop_stream()
         dialtone.rewind()
-        tone0.rewind()
+        if play_tone.wavefile:
+            play_tone.wavefile.rewind()
         stream.start_stream()
 
 stream.stop_stream()
 stream.close()
 dialtone.close()
-tone0.close()
+busytone.close()
+ringtone.close()
+
+startone.close()
+poundtone.close()
+
+for i in range(10):
+    tones[i].close()
 
 pa.terminate()
