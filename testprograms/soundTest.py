@@ -55,23 +55,25 @@ print("Done.")
 class OnOff:
     def __init__(self):
         self.pressed = False
-        self.wavefile = None
+        self.wavefile = dialtone
 
 play_tone = OnOff()
 def pressed_trigger():
     if play_tone.pressed == False:
-        play_tone.pressed = True
+        play_tone.wavefile = dialtone
 
 switch.when_pressed = pressed_trigger
 
 wf = dialtone
 pa = pyaudio.PyAudio()
 
+empty_wave = bytes(wf.getsampwidth()*CHUNK)
+
 def callback(in_data, frame_count, time_info, status):
-    if play_tone.pressed:
+    if play_tone.wavefile:
         data = play_tone.wavefile.readframes(frame_count)
     else:
-        data = dialtone.readframes(frame_count)
+        data = empty_wave
     return (data, pyaudio.paContinue)
 
 stream = pa.open(format=pa.get_format_from_width(wf.getsampwidth()), channels=wf.getnchannels(), rate=wf.getframerate(), output=True, stream_callback=callback)
@@ -84,11 +86,11 @@ while True:
         time.sleep(0.01) 
     else:
         print("Stream ended")
-        play_tone.pressed = False
         stream.stop_stream()
-        dialtone.rewind()
-        if play_tone.wavefile:
-            play_tone.wavefile.rewind()
+        play_tone.wavefile.rewind()
+        if play_tone.wavefile != dialtone:
+            play_tone.pressed = False
+            play_tone.wavefile = None
         stream.start_stream()
 
 stream.stop_stream()
