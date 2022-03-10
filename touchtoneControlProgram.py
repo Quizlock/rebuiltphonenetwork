@@ -89,6 +89,7 @@ print("Done.")
 ##########################
 #INITIALIZE KEYPAD
 ##########################
+#TODO: Test keypad clicks - missing keys
 print("Initializing Keypad...", end="")
 KEYPAD = [ [1,2,3], [4,5,6], [7,8,9], ["*",0,"#"]]
 ROW_PINS = [9, 11, 20, 21]
