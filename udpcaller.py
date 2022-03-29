@@ -19,6 +19,7 @@ class UDPCaller:
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFFER_SIZE)
+        self.kill_thread = False
 
         try:
             print('Attempting to connect to ' + str(self.ip_address) + ":" + str(self.port))
@@ -50,7 +51,7 @@ class UDPCaller:
 
     def receive_data(self):
         def get_audio_data():
-            while True:
+            while not self.kill_thread:
                 frame, server_address = self.sock.recvfrom(self.BUFFER_SIZE)
                 self.input_queue.put(frame)
                 print('Queue size ...', self.input_queue.qsize())
@@ -58,7 +59,7 @@ class UDPCaller:
         listener_thread = threading.Thread(target=get_audio_data, args=())
         listener_thread.start()
 
-        while True:
+        while not self.kill_thread:
             try:
                 frame = self.input_queue.get()
                 self.playing_stream.write(frame)
@@ -67,7 +68,14 @@ class UDPCaller:
 
 
     def send_data(self):
-        while True:
+        while not self.kill_thread:
             data = self.recording_stream.read(self.CHUNK_SIZE)
             self.sock.sendto(data, (self.ip_address, self.port))
             time.sleep(0.005)
+            
+    def close(self):
+        self.kill_thread = True
+        self.playing_stream.close()
+        self.recording_stream.close()
+        self.sock.close()
+        self.p_aud.terminate()

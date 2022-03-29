@@ -17,21 +17,25 @@ class UDPReceiver:
 
         self.input_queue = queue.Queue(maxsize=2000)
 
+        open_listener()
+            
+        self.p_aud = pyaudio.PyAudio()
+        self.playing_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=self.CHUNK_SIZE)
+        self.recording_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=self.CHUNK_SIZE)
+
+        if self.open_socket:
+            start_streams()
+            
+            
+    def open_listener(self):
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF,self.BUFFER_SIZE)
             self.sock.bind(('', self.port))
-            open_socket = True
+            self.open_socket = True
         except:
             print('Could not bind to port ' + str(self.port))
-            open_socket = False
-
-        if open_socket:
-            self.p_aud = pyaudio.PyAudio()
-            self.playing_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=self.CHUNK_SIZE)
-            #Just test receiving a stream first
-            self.recording_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=self.CHUNK_SIZE)
-            self.accept_connections()
+            self.open_socket = False
 
     def accept_connections(self):
         print('Running on ' + str(self.ip) + ":" + str(self.port))
@@ -48,7 +52,7 @@ class UDPReceiver:
 
     def receive_data(self):
         def get_audio_data():
-            while True:
+            while self.open_socket:
                 frame, client_address = self.sock.recvfrom(self.BUFFER_SIZE)
                 self.input_queue.put(frame)
                 print('Queue size...',self.input_queue.qsize())
@@ -56,7 +60,7 @@ class UDPReceiver:
         listener_thread = threading.Thread(target=get_audio_data, args=())
         listener_thread.start()
 
-        while True:
+        while self.open_socket:
             try:
                 frame = self.input_queue.get()
                 self.playing_stream.write(frame)
@@ -65,8 +69,20 @@ class UDPReceiver:
 
 
     def send_data(self, address):
-        while True:
+        while self.open_socket:
             data = self.recording_stream.read(self.CHUNK_SIZE)
             self.sock.sendto(data, address)
             time.sleep(0.001)
 
+    def pause(self):
+        self.sock.close()
+        self.open_socket = False
+        self.playing_stream.stop_stream()
+        self.recording_stream.stop_stream()
+    
+    def start_streams(self):
+        if not self.open_socket:
+            open_listener()
+        self.playing_stream.start_stream()
+        self.recording_stream.start_stream()
+        self.accept_connections()

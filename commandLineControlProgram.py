@@ -171,6 +171,9 @@ while True:
                 dialing_stream.start_stream()
             #When dial is valid, connect to other phone
             #Analyze key string
+            if network.room_number_in_ip_table(key_string):
+                #Call room 
+                caller = UDPCaller(network.get_room_ip, network.port)
         else:
             #Talking on the phone
             pass
