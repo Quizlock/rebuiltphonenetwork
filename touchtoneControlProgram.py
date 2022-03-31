@@ -64,6 +64,7 @@ def hook_switched():
         phone_on_hook = False
         if incoming_call:
             #Answer the incoming call
+            pass
         else:
             #If no incoming call, you want to dial out - play dial tone and wait for buttons
             play_tone.wavefile = dialtone
@@ -168,7 +169,7 @@ while True:
             #Listen for calls
             #If incoming call, ring
             pass
-        else
+        else:
             #Play dial tone
             if dialing_stream.is_active():
                 time.sleep(0.01)
