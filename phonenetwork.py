@@ -17,11 +17,11 @@ class PhoneNetwork:
 
         self.my_room_number = self_address # Room Number of the Phone
 
-        def room_number_in_ip_table(room_number):
-            return room_number in ip_table
+    def room_number_in_ip_table(room_number):
+        return room_number in ip_table
 
-        def get_room_ip(room_number):
-            return self.ip_table[room_number]
+    def get_room_ip(room_number):
+        return self.ip_table[room_number]
 
     def print_ip_table(self):
         print("-----CURRENT PHONE NETWORK-----")

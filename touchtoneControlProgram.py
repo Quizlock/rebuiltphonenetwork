@@ -10,6 +10,17 @@ import pyaudio, wave
 import time
 
 ##########################
+#PIN CONSTANTS
+##########################
+#Touchtone Keypad Pins
+PIN_T = [21, 20, 9, 10, 26, 19, 13 , 6]
+PIN_ON_HOOK = 24
+PIN_OFF_HOOK = 23
+PIN_MOTOR_IN = 18
+PIN_MOTOR_SCL = 3
+PIN_MOTOR_SDA = 2
+
+##########################
 #INITIALIZE WAVE FILES
 ##########################
 print("Loading Wave Files...", end="")
@@ -54,8 +65,8 @@ dialing_stream = audio_control.open(format=AUDIO_FORMAT, channels=CHANNELS, rate
 #INITIALIZE PHONE HOOK
 #########################
 print("Initializing phone hook button...", end="")
-off_hook_button = Button(23) #off hook button is closed when the phone is off the hook
-on_hook_button = Button(24) #on hook button is closed when the phone is on the hook
+off_hook_button = Button(PIN_OFF_HOOK) #off hook button is closed when the phone is off the hook
+on_hook_button = Button(PIN_ON_HOOK) #on hook button is closed when the phone is on the hook
 
 def hook_switched():
     if off_hook_button.is_pressed and not on_hook_button.is_pressed:
@@ -93,8 +104,8 @@ print("Done.")
 #TODO: Test keypad clicks - missing keys
 print("Initializing Keypad...", end="")
 KEYPAD = [ [1,2,3], [4,5,6], [7,8,9], ["*",0,"#"]]
-ROW_PINS = [9, 11, 20, 21]
-COL_PINS = [26, 19, 13]
+ROW_PINS = [PIN_T[3], PIN_T[2], PIN_T[1], PIN_T[0]]
+COL_PINS = [PIN_T[4], PIN_T[5], PIN_T[6]]
 
 factory = rpi_gpio.KeypadFactory()
 keypad = factory.create_keypad(keypad=KEYPAD, row_pins=ROW_PINS, col_pins=COL_PINS)
@@ -110,7 +121,8 @@ key_string = ""
 
 def key_pressed(key):
     #Play the accompaning sound
-    print("Pressed: ", key)
+    print("Pressed: ", key, end=" ")
+    
     if play_tone.pressed == False:
         play_tone.pressed = True
         if key == "*":
@@ -122,6 +134,7 @@ def key_pressed(key):
 
     #Update key_string
     key_string = key_string + key
+    print("Current key_string: ", key_string)
 
 
 keypad.registerKeyPressHandler(key_pressed)
@@ -151,6 +164,7 @@ print("Done.")
 network.print_ip_table()
 
 receiver = UDPReceiver(network.port)
+caller = None
 
 #Make sure that the phone starts on the hook when loaded
 if not phone_on_hook:
@@ -166,25 +180,32 @@ while True:
     try:
         #Check for status
         if phone_on_hook:
+            #Close all open lines when phone is on the hook
+            if caller:
+                caller.close()
+                caller = None
+        
             #Listen for calls
             #If incoming call, ring
             pass
         else:
-            #Play dial tone
-            if dialing_stream.is_active():
-                time.sleep(0.01)
-            else:
-                print("Rewinding dialing stream")
-                dialing_stream.stop_stream()
-                play_tone.wavefile.rewind()
-                if play_tone.wavefile != dialtone:
-                    play_tone.pressed = False
-                    play_tone.wavefile = None
-                dialing_stream.start_stream()
-            #When dial is valid, connect to other phone
-            #Analyze key string
-            if "*" not in key_string and "#" not in key_string:
-
+            if not caller:
+                #Play dial tone
+                if dialing_stream.is_active():
+                    time.sleep(0.01)
+                else:
+                    print("Rewinding dialing stream")
+                    dialing_stream.stop_stream()
+                    play_tone.wavefile.rewind()
+                    if play_tone.wavefile != dialtone:
+                        play_tone.pressed = False
+                        play_tone.wavefile = None
+                    dialing_stream.start_stream()
+                #When dial is valid, connect to other phone
+                #Analyze key string
+                if network.room_number_in_ip_table(key_string):
+                    #Call room 
+                    caller = UDPCaller(network.get_room_ip, network.port)
     except:
         break 
 
