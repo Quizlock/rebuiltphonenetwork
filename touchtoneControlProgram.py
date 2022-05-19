@@ -51,7 +51,6 @@ class KeySwitch:
     def __init__(self):
         self.pressed = False
         self.wavefile = None
-        self.rewind = False
         self.phone_on_hook = True
         self.incoming_call = False
 
@@ -70,9 +69,8 @@ key_string = KeyString()
 def callback(in_data, frame_count, time_info, status):
     if play_tone.wavefile and not play_tone.phone_on_hook and not play_tone.incoming_call:
         data = play_tone.wavefile.readframes(frame_count)
-        if len(data) < CHUNK_SIZE: 
-            print("Sending rewind message")
-            play_tone.rewind = True
+        if len(data) < CHUNK_SIZE:
+            print("BU")
     else:
         data = None
     return (data, pyaudio.paContinue)
@@ -138,6 +136,7 @@ def key_pressed(key):
     print("Pressed: ", key, end=" ")
     
     if play_tone.pressed == False:
+        dialing_stream.stop_stream()
         play_tone.pressed = True
         if key == "*":
             play_tone.wavefile = startone
@@ -145,6 +144,9 @@ def key_pressed(key):
             play_tone.wavefile = poundtone
         else:
             play_tone.wavefile = tones[int(key)]
+        print("Playing touchtone", key)
+        play_tone.wavefile.rewind()
+        dialing_stream.start_stream()
 
     #Update key_string
     key_string.keys_pressed = key_string.keys_pressed + str(key)
@@ -192,6 +194,8 @@ print("Entering main loop")
 ############################
 #MAIN CONTROL LOOP
 ############################
+calling = False
+
 while True:
     try:
         #Check for status
@@ -200,14 +204,13 @@ while True:
         
             #Listen for calls
             #If incoming call, ring
-            pass
+            calling = False
         else:
             #Play dial tone
             if dialing_stream.is_active():
                 time.sleep(0.01)
             elif play_tone.wavefile:
                 print("Rewinding dialing stream")
-                play_tone.rewind = False
                 dialing_stream.stop_stream()
                 play_tone.wavefile.rewind()
                 if play_tone.wavefile != dialtone:
@@ -216,10 +219,11 @@ while True:
                 dialing_stream.start_stream()
             #When dial is valid, connect to other phone
             #Analyze key string
-            if network.room_number_in_ip_table(key_string.keys_pressed):
+            if network.room_number_in_ip_table(key_string.keys_pressed) and not calling:
                 #Call room 
                 #caller = UDPCaller(network.get_room_ip, network.port)
                 print("Calling " + key_string.keys_pressed)
+                calling = True
     except Exception as e:
         print(e)
         break 
