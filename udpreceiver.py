@@ -17,16 +17,11 @@ class UDPReceiver:
 
         self.input_queue = queue.Queue(maxsize=2000)
 
-        open_listener()
-            
         self.p_aud = pyaudio.PyAudio()
         self.playing_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=self.CHUNK_SIZE)
         self.recording_stream = self.p_aud.open(format=AUDIO_FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=self.CHUNK_SIZE)
 
-        if self.open_socket:
-            start_streams()
-            
-            
+
     def open_listener(self):
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -36,6 +31,7 @@ class UDPReceiver:
         except:
             print('Could not bind to port ' + str(self.port))
             self.open_socket = False
+
 
     def accept_connections(self):
         print('Running on ' + str(self.ip) + ":" + str(self.port))
