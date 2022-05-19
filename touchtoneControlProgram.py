@@ -164,11 +164,13 @@ print("...", end="")
 i2c = busio.I2C(board.SCL, board.SDA)
 drv = adafruit_drv2605.DRV2605(i2c)
 
-drv.sequence[0] = adafruit_drv2605.Effect(1) #Strong Click - 100%
-drv.sequence[1] = adafruit_drv2605.Pause(0.5) #.5 Sec Pause
-drv.sequence[2] = adafruit_drv2605.Effect(47) #Buzz 1 - 100%
-drv.sequence[3] = adafruit_drv2605.Effect(0) #None
+drv.sequence[0] = adafruit_drv2605.Effect(118) #super long buzz
+drv.sequence[1] = adafruit_drv2605.Pause(0.5)
 
+print("Done.")
+
+print("Testing Ringer...")
+drv.play()
 print("Done.")
 
 ###########################
